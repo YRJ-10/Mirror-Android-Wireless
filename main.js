@@ -54,10 +54,11 @@ ipcMain.handle('run-command', async (event, args) => {
                 '--tcpip=' + address,
                 '--turn-screen-off',
                 '--stay-awake',
-                '--video-bit-rate=2M', // Sangat rendah agar nyaris tidak ada beban di Wi-Fi
-                '--max-size=800',      // Ukuran lebih kecil agar proses pengiriman instan
-                '--video-codec=h265',  // Teknologi H.265: Gambar tetap tajam meskipun bitrate sangat kecil
-                '--no-audio'           // Tetap tanpa suara
+                '--video-bit-rate=1M',    // Ekstrem: 1 Mbps untuk menghindari kemacetan router sama sekali
+                '--max-size=800',     
+                '--video-codec=h265', 
+                '--display-buffer=50',    // RAHASIA WI-FI: Memberi jeda 50ms untuk menyerap 'stutter' atau patah-patah sinyal
+                '--no-audio'          
             ];
             child = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
             resolve({ success: true, message: 'Scrcpy launched' });
