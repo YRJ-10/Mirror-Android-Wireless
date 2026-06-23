@@ -54,10 +54,10 @@ ipcMain.handle('run-command', async (event, args) => {
                 '--tcpip=' + address,
                 '--turn-screen-off',
                 '--stay-awake',
-                '--video-bit-rate=1M',    // Ekstrem: 1 Mbps untuk menghindari kemacetan router sama sekali
+                '--video-bit-rate=1M',    
                 '--max-size=800',     
                 '--video-codec=h265', 
-                '--display-buffer=50',    // RAHASIA WI-FI: Memberi jeda 50ms untuk menyerap 'stutter' atau patah-patah sinyal
+                '--video-buffer=50',      // Perbaikan parameter: di versi baru namanya video-buffer
                 '--no-audio'          
             ];
             child = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
