@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Android Wireless Mirror</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <title>Wireless Mirror</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,51 +14,72 @@
             <p>Connect your Android seamlessly</p>
         </header>
 
-        <main>
-            <div class="tabs">
-                <button class="tab-btn active" id="tab-connect">Connect & Mirror</button>
-                <button class="tab-btn" id="tab-pair">New Pairing</button>
+        <!-- Riwayat Perangkat -->
+        <div class="section-card" id="history-section" style="display: none; margin-bottom: 15px; padding: 15px;">
+            <div class="section-title" style="font-size: 14px; margin-bottom: 0;">
+                <span class="icon">📜</span> Riwayat Perangkat Ter-Pairing
             </div>
+            <select id="history-select" style="width: 100%; padding: 8px; margin-top: 10px; background: #1a1a1a; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; font-size: 14px; outline: none;">
+                <option value="">-- Pilih Perangkat --</option>
+            </select>
+        </div>
 
-            <!-- Connect Section -->
-            <section id="section-connect" class="active-section">
-                <div class="form-group">
-                    <label for="conn-ip">IP Address</label>
-                    <input type="text" id="conn-ip" placeholder="e.g. 192.168.1.10">
+        <!-- Bagian Pertama: Pairing Khusus Port Popup -->
+        <div class="section-card">
+            <div class="section-title">
+                <span class="icon">🔑</span> 1. PAIRING DEVICE
+            </div>
+            <p class="helper-text">Masukkan angka dari <strong>POPUP 6-Digit</strong> di HP Anda.</p>
+            
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label>IP Address</label>
+                    <input type="text" id="pair-ip" placeholder="192.168.1.x" value="192.168.1.">
                 </div>
-                <div class="form-group">
-                    <label for="conn-port">Port (from Wireless Debugging main page)</label>
-                    <input type="text" id="conn-port" placeholder="e.g. 5555 or random like 43215">
+                <div class="form-group flex-1">
+                    <label>Port</label>
+                    <input type="text" id="pair-port" placeholder="Port Popup">
                 </div>
-                <button class="btn btn-primary" id="btn-start">
-                    <span class="icon">🚀</span> Start Mirroring
-                </button>
-                <button class="btn btn-secondary" id="btn-stop" style="display: none;">
-                    <span class="icon">🛑</span> Stop Mirroring
-                </button>
-                <div id="connect-status" class="status-msg"></div>
-            </section>
+            </div>
+            <div class="form-group">
+                <label>Pairing Code</label>
+                <input type="text" id="pair-code" placeholder="6 Digit Code" maxlength="6">
+            </div>
+            
+            <button class="btn btn-secondary" id="btn-pair">
+                <span class="icon">🔗</span> Pair Device
+            </button>
+            <div id="pair-status" class="status-msg"></div>
+        </div>
 
-            <!-- Pair Section -->
-            <section id="section-pair" style="display: none;">
-                <div class="form-group">
-                    <label for="pair-ip">IP Address</label>
-                    <input type="text" id="pair-ip" placeholder="e.g. 192.168.1.10">
+        <div class="divider"></div>
+
+        <!-- Bagian Kedua: Koneksi Utama -->
+        <div class="section-card">
+            <div class="section-title">
+                <span class="icon">📱</span> 2. START MIRRORING
+            </div>
+            <p class="helper-text">Masukkan Port dari <strong>LAYAR UTAMA</strong> Wireless Debugging.</p>
+            
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label>IP Address</label>
+                    <input type="text" id="conn-ip" placeholder="192.168.1.x" value="192.168.1.">
                 </div>
-                <div class="form-group">
-                    <label for="pair-port">Pairing Port (from Pair Device screen)</label>
-                    <input type="text" id="pair-port" placeholder="e.g. 40123">
+                <div class="form-group flex-1">
+                    <label>Port</label>
+                    <input type="text" id="conn-port" placeholder="Port Utama">
                 </div>
-                <div class="form-group">
-                    <label for="pair-code">Pairing Code</label>
-                    <input type="text" id="pair-code" placeholder="e.g. 123456">
-                </div>
-                <button class="btn btn-secondary" id="btn-pair">
-                    <span class="icon">🔗</span> Pair Device
-                </button>
-                <div id="pair-status" class="status-msg"></div>
-            </section>
-        </main>
+            </div>
+            
+            <button class="btn btn-primary" id="btn-start">
+                <span class="icon">🚀</span> START MIRRORING
+            </button>
+            <button class="btn btn-danger" id="btn-stop" style="display: none;">
+                <span class="icon">🛑</span> STOP MIRRORING
+            </button>
+            <div id="conn-status" class="status-msg"></div>
+        </div>
     </div>
     <script src="renderer.js"></script>
 </body>

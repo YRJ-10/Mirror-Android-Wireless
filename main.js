@@ -1,108 +1,105 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
 const { spawn } = require('child_process');
+const path = require('path');
 
 let mainWindow;
 let scrcpyProcess = null;
 
-// Paths to tools
+// Mengamankan path ADB dan SCRCPY (aman saat di-build atau via npm start)
 const toolsPath = path.join(__dirname, 'tools', 'scrcpy');
+
 const adbPath = path.join(toolsPath, 'adb.exe');
-const scrcpyPath = path.join(toolsPath, 'scrcpy.exe');
+const scrcpyBinPath = path.join(toolsPath, 'scrcpy.exe');
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 600,
-    height: 700,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    },
-    autoHideMenuBar: true,
-    backgroundColor: '#0f172a',
-    icon: path.join(__dirname, 'icon.ico')
-  });
+    mainWindow = new BrowserWindow({
+        width: 450,
+        height: 600,
+        resizable: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        },
+        autoHideMenuBar: true
+    });
 
-  mainWindow.loadFile('index.html');
+    mainWindow.loadFile('index.html');
 }
 
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+    if (scrcpyProcess) {
+        scrcpyProcess.kill();
+    }
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
 });
 
-// IPC Handlers
-ipcMain.handle('run-command', async (event, args) => {
-    const { type, ip, port, code } = args;
-    const address = `${ip}:${port}`;
+// IPC Handler
+ipcMain.handle('run-command', (event, type, ip, port, code) => {
+    return new Promise((resolve) => {
+        let output = '';
 
-    return new Promise((resolve, reject) => {
-        let child;
-        
         if (type === 'pair') {
-            child = spawn(adbPath, ['pair', address, code], { cwd: toolsPath });
-        } else if (type === 'connect') {
-            child = spawn(adbPath, ['connect', address], { cwd: toolsPath });
-        } else if (type === 'start') {
-            const scrcpyArgs = [
-                '--tcpip=' + address,
-                '--turn-screen-off',
-                '--stay-awake',
-                '--video-bit-rate=1M',    
-                '--max-size=800',     
-                '--video-codec=h265', 
-                '--video-buffer=50',      // Perbaikan parameter: di versi baru namanya video-buffer
-                '--no-audio'          
-            ];
-            scrcpyProcess = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
+            const child = spawn(adbPath, ['pair', `${ip}:${port}`, code], { cwd: toolsPath });
+            child.stdout.on('data', (data) => { output += data.toString(); });
+            child.stderr.on('data', (data) => { output += data.toString(); });
             
-            scrcpyProcess.on('close', () => {
-                scrcpyProcess = null;
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('mirror-closed');
+            child.on('close', () => {
+                if (output.toLowerCase().includes('success') || output.toLowerCase().includes('successfully')) {
+                    resolve({ success: true, message: output });
+                } else {
+                    resolve({ success: false, message: output });
                 }
             });
+        } 
+        else if (type === 'connect') {
+            const child = spawn(adbPath, ['connect', `${ip}:${port}`], { cwd: toolsPath });
+            child.stdout.on('data', (data) => { output += data.toString(); });
+            child.stderr.on('data', (data) => { output += data.toString(); });
             
-            resolve({ success: true, message: 'Scrcpy launched' });
-            return;
-        } else if (type === 'stop') {
+            child.on('close', () => {
+                if (output.toLowerCase().includes('connected to') || output.toLowerCase().includes('already connected')) {
+                    // Berhasil connect, jalankan scrcpy
+                    if (scrcpyProcess) scrcpyProcess.kill();
+
+                    scrcpyProcess = spawn(scrcpyBinPath, [
+                        `--serial=${ip}:${port}`,
+                        '--turn-screen-off',
+                        '--stay-awake',
+                        '--video-bit-rate=1M',
+                        '--max-size=800',
+                        '--video-codec=h265',
+                        '--video-buffer=50',
+                        '--no-audio'
+                    ], { cwd: toolsPath });
+
+                    let scrcpyErr = '';
+                    scrcpyProcess.stderr.on('data', (data) => {
+                        scrcpyErr += data.toString();
+                    });
+
+                    scrcpyProcess.on('close', (code) => {
+                        scrcpyProcess = null;
+                        if (mainWindow) {
+                            mainWindow.webContents.send('scrcpy-closed', scrcpyErr);
+                        }
+                    });
+
+                    resolve({ success: true, message: output });
+                } else {
+                    resolve({ success: false, message: output });
+                }
+            });
+        }
+        else if (type === 'stop') {
             if (scrcpyProcess) {
                 scrcpyProcess.kill();
                 scrcpyProcess = null;
             }
             resolve({ success: true });
-            return;
         }
-
-        let output = '';
-        let errorOutput = '';
-
-        child.stdout.on('data', (data) => {
-            output += data.toString();
-        });
-
-        child.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
-
-        child.on('close', (codeStatus) => {
-            const outStr = output.toLowerCase();
-            const errStr = errorOutput.toLowerCase();
-            
-            if (outStr.includes('cannot connect') || outStr.includes('failed') || errStr.includes('cannot connect') || errStr.includes('failed')) {
-                 resolve({ success: false, message: output || errorOutput });
-            } else if (codeStatus === 0 || outStr.includes('already connected') || outStr.includes('successfully connected') || outStr.includes('successfully paired')) {
-                resolve({ success: true, message: output });
-            } else {
-                resolve({ success: false, message: errorOutput || output || `Process exited with code ${codeStatus}` });
-            }
-        });
     });
 });

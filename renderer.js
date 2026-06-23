@@ -1,156 +1,153 @@
 const { ipcRenderer } = require('electron');
 
 // UI Elements
-const tabConnect = document.getElementById('tab-connect');
-const tabPair = document.getElementById('tab-pair');
-const sectionConnect = document.getElementById('section-connect');
-const sectionPair = document.getElementById('section-pair');
-
+const btnPair = document.getElementById('btn-pair');
 const btnStart = document.getElementById('btn-start');
 const btnStop = document.getElementById('btn-stop');
-const btnPair = document.getElementById('btn-pair');
-
-// Inputs
-const connIp = document.getElementById('conn-ip');
-const connPort = document.getElementById('conn-port');
-const pairIp = document.getElementById('pair-ip');
-const pairPort = document.getElementById('pair-port');
-const pairCode = document.getElementById('pair-code');
-
-// Status
-const connStatus = document.getElementById('connect-status');
 const pairStatus = document.getElementById('pair-status');
+const connStatus = document.getElementById('conn-status');
+
+// Pairing Action
+btnPair.addEventListener('click', async () => {
+    const ip = document.getElementById('pair-ip').value.trim();
+    const port = document.getElementById('pair-port').value.trim();
+    const code = document.getElementById('pair-code').value.trim();
+
+    if (!ip || !port || !code) {
+        pairStatus.className = 'status-msg error';
+        pairStatus.innerText = 'Harap isi IP, Port, dan Code.';
+        return;
+    }
+
+    localStorage.setItem('lastIp', ip);
+    localStorage.setItem('lastPairPort', port);
+    localStorage.setItem('lastPairCode', code);
+
+    pairStatus.className = 'status-msg warning';
+    pairStatus.innerText = 'Memulai Pairing...';
+
+    const result = await ipcRenderer.invoke('run-command', 'pair', ip, port, code);
+    
+    if (result.success) {
+        pairStatus.className = 'status-msg success';
+        pairStatus.innerText = 'Pairing Sukses! Lanjut ke bawah.';
+        
+        // Simpan ke riwayat
+        let history = JSON.parse(localStorage.getItem('pairHistory') || '[]');
+        const newDevice = `${ip} (Port Pairing: ${port})`;
+        if (!history.includes(newDevice)) {
+            history.push(newDevice);
+            localStorage.setItem('pairHistory', JSON.stringify(history));
+            loadHistory();
+        }
+
+        document.getElementById('conn-ip').value = ip;
+        document.getElementById('conn-port').focus();
+    } else {
+        pairStatus.className = 'status-msg error';
+        pairStatus.innerText = `Gagal: ${result.message}`;
+    }
+});
+
+// Connection & Start Action
+btnStart.addEventListener('click', async () => {
+    const ip = document.getElementById('conn-ip').value.trim();
+    const port = document.getElementById('conn-port').value.trim();
+
+    if (!ip || !port) {
+        connStatus.className = 'status-msg error';
+        connStatus.innerText = 'Harap isi IP dan Port utama.';
+        return;
+    }
+
+    localStorage.setItem('lastIp', ip);
+    localStorage.setItem('lastConnPort', port);
+
+    connStatus.className = 'status-msg warning';
+    connStatus.innerText = 'Mereset ADB dan Menghubungkan...';
+
+    const result = await ipcRenderer.invoke('run-command', 'connect', ip, port);
+
+    if (result.success) {
+        connStatus.className = 'status-msg success';
+        connStatus.innerText = 'Berhasil Terhubung! Membuka layar...';
+        btnStart.style.display = 'none';
+        btnStop.style.display = 'flex';
+    } else {
+        connStatus.className = 'status-msg error';
+        connStatus.innerText = `Koneksi Gagal: ${result.message.substring(0, 60)}...`;
+        
+        // Jika error mengandung indikasi kunci kadaluarsa atau ditolak
+        if (result.message.toLowerCase().includes('unauthorized') || 
+            result.message.toLowerCase().includes('refused') || 
+            result.message.toLowerCase().includes('offline')) {
+            pairStatus.className = 'status-msg error';
+            pairStatus.innerText = '✗ Pairing sudah tidak berlaku/ditolak. Wajib Pairing Ulang!';
+        }
+    }
+});
+
+// Stop Action
+btnStop.addEventListener('click', async () => {
+    await ipcRenderer.invoke('run-command', 'stop');
+    btnStart.style.display = 'flex';
+    btnStop.style.display = 'none';
+    connStatus.className = 'status-msg';
+    connStatus.innerText = 'Mirroring Dihentikan.';
+});
+
+// Listener for unexpected close
+ipcRenderer.on('scrcpy-closed', (event, errStr) => {
+    btnStart.style.display = 'flex';
+    btnStop.style.display = 'none';
+    connStatus.className = 'status-msg error';
+    connStatus.innerText = errStr ? `Layar tertutup (Error: ${errStr.substring(0, 50)}...)` : 'Layar ditutup dari luar.';
+});
 
 // Load saved data
 window.onload = () => {
-    const savedIp = localStorage.getItem('lastIp') || '';
-    const savedConnPort = localStorage.getItem('lastConnPort') || '5555';
+    const savedIp = localStorage.getItem('lastIp');
+    const savedPairPort = localStorage.getItem('lastPairPort');
+    const savedPairCode = localStorage.getItem('lastPairCode');
+    const savedConnPort = localStorage.getItem('lastConnPort');
     
-    connIp.value = savedIp;
-    pairIp.value = savedIp;
-    connPort.value = savedConnPort;
+    if (savedIp) {
+        document.getElementById('pair-ip').value = savedIp;
+        document.getElementById('conn-ip').value = savedIp;
+    }
+    if (savedPairPort) document.getElementById('pair-port').value = savedPairPort;
+    if (savedPairCode) document.getElementById('pair-code').value = savedPairCode;
+    if (savedConnPort) document.getElementById('conn-port').value = savedConnPort;
+    
+    loadHistory();
 };
 
-// Tab Switching
-tabConnect.addEventListener('click', () => {
-    tabConnect.classList.add('active');
-    tabPair.classList.remove('active');
-    sectionConnect.style.display = 'block';
-    sectionPair.style.display = 'none';
-});
-
-tabPair.addEventListener('click', () => {
-    tabPair.classList.add('active');
-    tabConnect.classList.remove('active');
-    sectionPair.style.display = 'block';
-    sectionConnect.style.display = 'none';
+function loadHistory() {
+    let history = JSON.parse(localStorage.getItem('pairHistory') || '[]');
+    const historySection = document.getElementById('history-section');
+    const historySelect = document.getElementById('history-select');
     
-    // Sync IP if changed
-    pairIp.value = connIp.value;
-});
-
-function showStatus(element, type, message) {
-    element.className = `status-msg ${type}`;
-    element.innerText = message;
+    historySection.style.display = 'block'; // Selalu tampilkan
+    
+    if (history.length > 0) {
+        historySelect.disabled = false;
+        historySelect.innerHTML = '<option value="">-- Lihat / Pilih Riwayat Perangkat --</option>';
+        history.forEach(dev => {
+            let opt = document.createElement('option');
+            opt.value = dev;
+            opt.innerText = dev;
+            historySelect.appendChild(opt);
+        });
+    } else {
+        historySelect.innerHTML = '<option value="">-- Riwayat masih kosong --</option>';
+        historySelect.disabled = true;
+    }
 }
 
-// IPC listener for when mirror window is closed naturally or manually
-ipcRenderer.on('mirror-closed', () => {
-    btnStart.style.display = 'flex';
-    btnStop.style.display = 'none';
-    showStatus(connStatus, 'success', 'Mirroring stopped.');
-    setTimeout(() => { connStatus.style.display = 'none'; }, 3000);
-});
-
-// Pair Button Logic
-btnPair.addEventListener('click', async () => {
-    const ip = pairIp.value.trim();
-    const port = pairPort.value.trim();
-    const code = pairCode.value.trim();
-
-    if (!ip || !port || !code) {
-        showStatus(pairStatus, 'error', 'Please fill all fields');
-        return;
-    }
-
-    showStatus(pairStatus, 'loading', 'Pairing in progress...');
-    btnPair.disabled = true;
-
-    try {
-        const result = await ipcRenderer.invoke('run-command', {
-            type: 'pair', ip, port, code
-        });
-
-        if (result.success && result.message.toLowerCase().includes('successfully paired')) {
-            showStatus(pairStatus, 'success', 'Successfully paired! You can now switch to Connect tab.');
-            localStorage.setItem('lastIp', ip);
-            connIp.value = ip;
-        } else {
-            showStatus(pairStatus, 'error', result.message || 'Pairing failed. Check IP/Port/Code.');
-        }
-    } catch (err) {
-        showStatus(pairStatus, 'error', 'Error: ' + err.message);
-    } finally {
-        btnPair.disabled = false;
-    }
-});
-
-// Start Mirroring Logic
-btnStart.addEventListener('click', async () => {
-    const ip = connIp.value.trim();
-    const port = connPort.value.trim() || '5555';
-
-    if (!ip) {
-        showStatus(connStatus, 'error', 'IP Address is required');
-        return;
-    }
-
-    showStatus(connStatus, 'loading', 'Connecting...');
-    btnStart.disabled = true;
-
-    try {
-        // First connect
-        const connResult = await ipcRenderer.invoke('run-command', {
-            type: 'connect', ip, port
-        });
-
-        if (connResult.success || connResult.message.includes('already connected')) {
-            showStatus(connStatus, 'loading', 'Launching Scrcpy...');
-            localStorage.setItem('lastIp', ip);
-            localStorage.setItem('lastConnPort', port);
-
-            const startResult = await ipcRenderer.invoke('run-command', {
-                type: 'start', ip, port
-            });
-
-            if (startResult.success) {
-                showStatus(connStatus, 'success', 'Mirroring started!');
-                btnStart.style.display = 'none';
-                btnStop.style.display = 'flex';
-                setTimeout(() => {
-                    connStatus.style.display = 'none';
-                }, 3000);
-            } else {
-                showStatus(connStatus, 'error', 'Failed to start scrcpy: ' + startResult.message);
-            }
-        } else {
-             showStatus(connStatus, 'error', 'Connection failed: ' + connResult.message);
-        }
-    } catch (err) {
-        showStatus(connStatus, 'error', 'Error: ' + err.message);
-    } finally {
-        btnStart.disabled = false;
-    }
-});
-
-// Stop Mirroring Logic
-btnStop.addEventListener('click', async () => {
-    btnStop.disabled = true;
-    try {
-        await ipcRenderer.invoke('run-command', { type: 'stop' });
-    } catch (err) {
-        console.error(err);
-    } finally {
-        btnStop.disabled = false;
+document.getElementById('history-select').addEventListener('change', (e) => {
+    if (e.target.value) {
+        let ip = e.target.value.split(' ')[0];
+        document.getElementById('pair-ip').value = ip;
+        document.getElementById('conn-ip').value = ip;
     }
 });
