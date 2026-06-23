@@ -7,6 +7,7 @@ const sectionConnect = document.getElementById('section-connect');
 const sectionPair = document.getElementById('section-pair');
 
 const btnStart = document.getElementById('btn-start');
+const btnStop = document.getElementById('btn-stop');
 const btnPair = document.getElementById('btn-pair');
 
 // Inputs
@@ -52,6 +53,14 @@ function showStatus(element, type, message) {
     element.className = `status-msg ${type}`;
     element.innerText = message;
 }
+
+// IPC listener for when mirror window is closed naturally or manually
+ipcRenderer.on('mirror-closed', () => {
+    btnStart.style.display = 'flex';
+    btnStop.style.display = 'none';
+    showStatus(connStatus, 'success', 'Mirroring stopped.');
+    setTimeout(() => { connStatus.style.display = 'none'; }, 3000);
+});
 
 // Pair Button Logic
 btnPair.addEventListener('click', async () => {
@@ -116,6 +125,8 @@ btnStart.addEventListener('click', async () => {
 
             if (startResult.success) {
                 showStatus(connStatus, 'success', 'Mirroring started!');
+                btnStart.style.display = 'none';
+                btnStop.style.display = 'flex';
                 setTimeout(() => {
                     connStatus.style.display = 'none';
                 }, 3000);
@@ -129,5 +140,17 @@ btnStart.addEventListener('click', async () => {
         showStatus(connStatus, 'error', 'Error: ' + err.message);
     } finally {
         btnStart.disabled = false;
+    }
+});
+
+// Stop Mirroring Logic
+btnStop.addEventListener('click', async () => {
+    btnStop.disabled = true;
+    try {
+        await ipcRenderer.invoke('run-command', { type: 'stop' });
+    } catch (err) {
+        console.error(err);
+    } finally {
+        btnStop.disabled = false;
     }
 });

@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 let mainWindow;
+let scrcpyProcess = null;
 
 // Paths to tools
 const toolsPath = path.join(__dirname, 'tools', 'scrcpy');
@@ -60,8 +61,23 @@ ipcMain.handle('run-command', async (event, args) => {
                 '--video-buffer=50',      // Perbaikan parameter: di versi baru namanya video-buffer
                 '--no-audio'          
             ];
-            child = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
+            scrcpyProcess = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
+            
+            scrcpyProcess.on('close', () => {
+                scrcpyProcess = null;
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('mirror-closed');
+                }
+            });
+            
             resolve({ success: true, message: 'Scrcpy launched' });
+            return;
+        } else if (type === 'stop') {
+            if (scrcpyProcess) {
+                scrcpyProcess.kill();
+                scrcpyProcess = null;
+            }
+            resolve({ success: true });
             return;
         }
 
