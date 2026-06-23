@@ -4,10 +4,25 @@
   "description": "Smart Launcher Scrcpy untuk Windows",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.yrj.wirelessmirror",
+    "productName": "Wireless Mirror",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    },
+    "asarUnpack": [
+      "tools/**/*"
+    ]
   },
   "dependencies": {},
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^33.0.0",
+    "electron-builder": "^24.13.3"
   }
 }
