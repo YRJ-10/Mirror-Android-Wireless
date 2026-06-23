@@ -54,8 +54,10 @@ ipcMain.handle('run-command', async (event, args) => {
                 '--tcpip=' + address,
                 '--turn-screen-off',
                 '--stay-awake',
-                '--video-bit-rate=16M',
-                '--max-size=1920'
+                '--video-bit-rate=2M', // Sangat rendah agar nyaris tidak ada beban di Wi-Fi
+                '--max-size=800',      // Ukuran lebih kecil agar proses pengiriman instan
+                '--video-codec=h265',  // Teknologi H.265: Gambar tetap tajam meskipun bitrate sangat kecil
+                '--no-audio'           // Tetap tanpa suara
             ];
             child = spawn(scrcpyPath, scrcpyArgs, { cwd: toolsPath });
             resolve({ success: true, message: 'Scrcpy launched' });
@@ -74,7 +76,12 @@ ipcMain.handle('run-command', async (event, args) => {
         });
 
         child.on('close', (codeStatus) => {
-            if (codeStatus === 0 || output.includes('already connected') || output.includes('successfully connected') || output.includes('Successfully paired')) {
+            const outStr = output.toLowerCase();
+            const errStr = errorOutput.toLowerCase();
+            
+            if (outStr.includes('cannot connect') || outStr.includes('failed') || errStr.includes('cannot connect') || errStr.includes('failed')) {
+                 resolve({ success: false, message: output || errorOutput });
+            } else if (codeStatus === 0 || outStr.includes('already connected') || outStr.includes('successfully connected') || outStr.includes('successfully paired')) {
                 resolve({ success: true, message: output });
             } else {
                 resolve({ success: false, message: errorOutput || output || `Process exited with code ${codeStatus}` });
