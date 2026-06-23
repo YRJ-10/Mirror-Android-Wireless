@@ -16,8 +16,9 @@
 
         <!-- Riwayat Perangkat -->
         <div class="section-card" id="history-section" style="display: none; margin-bottom: 15px; padding: 15px;">
-            <div class="section-title" style="font-size: 14px; margin-bottom: 0;">
-                <span class="icon">📜</span> Riwayat Perangkat Ter-Pairing
+            <div class="section-title" style="font-size: 14px; margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Riwayat Perangkat Ter-Pairing
             </div>
             <select id="history-select" style="width: 100%; padding: 8px; margin-top: 10px; background: #1a1a1a; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; font-size: 14px; outline: none;">
                 <option value="">-- Pilih Perangkat --</option>
@@ -26,8 +27,9 @@
 
         <!-- Bagian Pertama: Pairing Khusus Port Popup -->
         <div class="section-card">
-            <div class="section-title">
-                <span class="icon">🔑</span> 1. PAIRING DEVICE
+            <div class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                1. PAIRING DEVICE
             </div>
             <p class="helper-text">Masukkan angka dari <strong>POPUP 6-Digit</strong> di HP Anda.</p>
             
@@ -47,7 +49,8 @@
             </div>
             
             <button class="btn btn-secondary" id="btn-pair">
-                <span class="icon">🔗</span> Pair Device
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                Pair Device
             </button>
             <div id="pair-status" class="status-msg"></div>
         </div>
@@ -56,8 +59,9 @@
 
         <!-- Bagian Kedua: Koneksi Utama -->
         <div class="section-card">
-            <div class="section-title">
-                <span class="icon">📱</span> 2. START MIRRORING
+            <div class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                2. START MIRRORING
             </div>
             <p class="helper-text">Masukkan Port dari <strong>LAYAR UTAMA</strong> Wireless Debugging.</p>
             
@@ -73,10 +77,12 @@
             </div>
             
             <button class="btn btn-primary" id="btn-start">
-                <span class="icon">🚀</span> START MIRRORING
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                START MIRRORING
             </button>
             <button class="btn btn-danger" id="btn-stop" style="display: none;">
-                <span class="icon">🛑</span> STOP MIRRORING
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                STOP MIRRORING
             </button>
             <div id="conn-status" class="status-msg"></div>
         </div>
