@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Wireless Mirror</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+    
+    <div class="container glass">
+        <header>
+            <h1>Wireless Mirror</h1>
+            <p>Connect your Android seamlessly</p>
+        </header>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-connect">Connect & Mirror</button>
+                <button class="tab-btn" id="tab-pair">New Pairing</button>
+            </div>
+
+            <!-- Connect Section -->
+            <section id="section-connect" class="active-section">
+                <div class="form-group">
+                    <label for="conn-ip">IP Address</label>
+                    <input type="text" id="conn-ip" placeholder="e.g. 192.168.1.10">
+                </div>
+                <div class="form-group">
+                    <label for="conn-port">Port (from Wireless Debugging main page)</label>
+                    <input type="text" id="conn-port" placeholder="e.g. 5555 or random like 43215">
+                </div>
+                <button class="btn btn-primary" id="btn-start">
+                    <span class="icon">🚀</span> Start Mirroring
+                </button>
+                <div id="connect-status" class="status-msg"></div>
+            </section>
+
+            <!-- Pair Section -->
+            <section id="section-pair" style="display: none;">
+                <div class="form-group">
+                    <label for="pair-ip">IP Address</label>
+                    <input type="text" id="pair-ip" placeholder="e.g. 192.168.1.10">
+                </div>
+                <div class="form-group">
+                    <label for="pair-port">Pairing Port (from Pair Device screen)</label>
+                    <input type="text" id="pair-port" placeholder="e.g. 40123">
+                </div>
+                <div class="form-group">
+                    <label for="pair-code">Pairing Code</label>
+                    <input type="text" id="pair-code" placeholder="e.g. 123456">
+                </div>
+                <button class="btn btn-secondary" id="btn-pair">
+                    <span class="icon">🔗</span> Pair Device
+                </button>
+                <div id="pair-status" class="status-msg"></div>
+            </section>
+        </main>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+</html>

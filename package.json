@@ -1,0 +1,13 @@
+{
+  "name": "mirror-android-wireless",
+  "version": "1.0.0",
+  "description": "Smart Launcher Scrcpy untuk Windows",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
