@@ -9,7 +9,7 @@ Wireless Mirror adalah launcher sederhana untuk menjalankan mirror layar hp andr
 Clone repository:
 
 ```bash
-git clone <url-repository-anda>
+git clone <url repo>
 cd Mirror-Android-Wireless
 ```
 
