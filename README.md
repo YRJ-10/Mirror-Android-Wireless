@@ -1,6 +1,6 @@
 # Wireless Mirror
 
-Wireless Mirror adalah launcher sederhana untuk menjalankan scrcpy wireless di Windows.
+Wireless Mirror adalah launcher sederhana untuk menjalankan mirror layar hp android (scrcpy) secara wireless di Windows.
 
 ![Tampilan aplikasi](sampel.png)
 
