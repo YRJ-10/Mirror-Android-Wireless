@@ -75,14 +75,14 @@ btnStart.addEventListener('click', async () => {
         btnStop.style.display = 'flex';
     } else {
         connStatus.className = 'status-msg error';
-        connStatus.innerText = `Koneksi Gagal: ${result.message.substring(0, 60)}...`;
+        connStatus.innerText = `Koneksi Gagal: ${result.message.substring(0, 220)}${result.message.length > 220 ? '...' : ''}`;
         
         // Jika error mengandung indikasi kunci kadaluarsa atau ditolak
         if (result.message.toLowerCase().includes('unauthorized') || 
             result.message.toLowerCase().includes('refused') || 
             result.message.toLowerCase().includes('offline')) {
             pairStatus.className = 'status-msg error';
-            pairStatus.innerText = '✗ Pairing sudah tidak berlaku/ditolak. Wajib Pairing Ulang!';
+            pairStatus.innerText = 'Pairing sudah tidak berlaku/ditolak. Wajib Pairing Ulang!';
         }
     }
 });
@@ -101,7 +101,7 @@ ipcRenderer.on('scrcpy-closed', (event, errStr) => {
     btnStart.style.display = 'flex';
     btnStop.style.display = 'none';
     connStatus.className = 'status-msg error';
-    connStatus.innerText = errStr ? `Layar tertutup (Error: ${errStr.substring(0, 50)}...)` : 'Layar ditutup dari luar.';
+    connStatus.innerText = errStr ? `Layar tertutup: ${errStr.substring(0, 220)}${errStr.length > 220 ? '...' : ''}` : 'Layar ditutup dari luar.';
 });
 
 // Load saved data
