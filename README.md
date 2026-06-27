@@ -36,9 +36,3 @@ Hasil build ada di folder:
 ```text
 dist/Mirror Wireless-win32-x64
 ```
-
-## Catatan
-
-- Folder `tools/scrcpy` harus ikut ada di repository karena berisi `adb.exe`, `scrcpy.exe`, dan file pendukungnya.
-- Jangan upload `node_modules` dan `dist`; keduanya bisa dibuat ulang dengan `npm install` dan `npm run build`.
-- Untuk Xiaomi/MIUI, aktifkan `USB debugging (setelan keamanan)` agar kontrol mouse berfungsi.
