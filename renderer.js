@@ -4,6 +4,9 @@ const { ipcRenderer } = require('electron');
 const btnPair = document.getElementById('btn-pair');
 const btnStart = document.getElementById('btn-start');
 const btnStop = document.getElementById('btn-stop');
+const btnDeleteHistory = document.getElementById('btn-delete-history');
+const btnClearHistory = document.getElementById('btn-clear-history');
+const historySelect = document.getElementById('history-select');
 const pairStatus = document.getElementById('pair-status');
 const connStatus = document.getElementById('conn-status');
 
@@ -125,12 +128,12 @@ window.onload = () => {
 function loadHistory() {
     let history = JSON.parse(localStorage.getItem('pairHistory') || '[]');
     const historySection = document.getElementById('history-section');
-    const historySelect = document.getElementById('history-select');
     
     historySection.style.display = 'block'; // Selalu tampilkan
     
     if (history.length > 0) {
         historySelect.disabled = false;
+        btnClearHistory.disabled = false;
         historySelect.innerHTML = '<option value="">-- Lihat / Pilih Riwayat Perangkat --</option>';
         history.forEach(dev => {
             let opt = document.createElement('option');
@@ -141,13 +144,39 @@ function loadHistory() {
     } else {
         historySelect.innerHTML = '<option value="">-- Riwayat masih kosong --</option>';
         historySelect.disabled = true;
+        btnClearHistory.disabled = true;
     }
+
+    btnDeleteHistory.disabled = true;
 }
 
-document.getElementById('history-select').addEventListener('change', (e) => {
+historySelect.addEventListener('change', (e) => {
+    btnDeleteHistory.disabled = !e.target.value;
+
     if (e.target.value) {
         let ip = e.target.value.split(' ')[0];
         document.getElementById('pair-ip').value = ip;
         document.getElementById('conn-ip').value = ip;
     }
+});
+
+btnDeleteHistory.addEventListener('click', () => {
+    const selectedDevice = historySelect.value;
+    if (!selectedDevice) return;
+
+    let history = JSON.parse(localStorage.getItem('pairHistory') || '[]');
+    history = history.filter(dev => dev !== selectedDevice);
+    localStorage.setItem('pairHistory', JSON.stringify(history));
+
+    pairStatus.className = 'status-msg warning';
+    pairStatus.innerText = 'Riwayat pairing dipilih sudah dihapus.';
+    loadHistory();
+});
+
+btnClearHistory.addEventListener('click', () => {
+    localStorage.removeItem('pairHistory');
+
+    pairStatus.className = 'status-msg warning';
+    pairStatus.innerText = 'Semua riwayat pairing sudah dihapus.';
+    loadHistory();
 });

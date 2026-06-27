@@ -164,6 +164,24 @@ input:focus {
     background-color: rgba(239, 68, 68, 0.1);
 }
 
+.btn-small {
+    padding: 8px;
+    font-size: 12px;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    transform: none;
+}
+
+.history-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
 .status-msg {
     margin-top: 10px;
     font-size: 12px;

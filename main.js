@@ -78,7 +78,7 @@ function startScrcpy(serial) {
 
         scrcpyProcess = spawn(scrcpyBinPath, args, {
             cwd: toolsPath,
-            windowsHide: true
+            windowsHide: false
         });
 
         const finish = (result) => {
