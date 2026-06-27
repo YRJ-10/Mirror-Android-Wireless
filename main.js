@@ -124,9 +124,11 @@ function startScrcpy(serial) {
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 450,
-        height: 600,
-        resizable: false,
+        width: 900,
+        height: 650,
+        minWidth: 760,
+        minHeight: 560,
+        resizable: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
